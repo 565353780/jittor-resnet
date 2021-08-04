@@ -16,6 +16,7 @@ model_path = ('resnet50.pth')
 #  params = pickle.load(open(model_path, "rb"))
 model = Resnet50(pretrained=True)
 #  model.load_parameters(params)
+model.eval()
 print(f'[*] Load model {model_path} success')
 
 if __name__ == '__main__':
