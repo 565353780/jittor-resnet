@@ -39,7 +39,7 @@ if __name__ == '__main__':
             ret = model(x)
             time_spend = time.time() - sta
             detected_num += 1
-            print("\rDetect process:", detected_num, "/", total_num, "cost time:", time_spend, "    ", end="")
+            print("\rDetect process:", detected_num, "/", total_num, "    ", end="")
             time_list.append(time_spend)
             #ret.save(os.path.join('result', img_name))
     print()

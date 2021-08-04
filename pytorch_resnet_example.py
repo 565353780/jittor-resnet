@@ -267,7 +267,7 @@ if __name__ == "__main__":
             batch_out = model(batch_t)
             time_spend = time.time() - start
             detected_num += 1
-            print("\rDetect process:", detected_num, "/", total_num, "cost time:", time_spend, "    ", end="")
+            print("\rDetect process:", detected_num, "/", total_num, "    ", end="")
             time_list.append(time_spend)
     print()
 
