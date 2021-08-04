@@ -26,17 +26,23 @@ if __name__ == '__main__':
     except:
         print('Destination dir exists')
         pass
+
+    run_episode = 10
     time_list = []
-    for i in range(10):
+    detected_num = 0
+    total_num = run_episode * len(os.listdir(img_dir))
+    for i in range(run_episode):
         for img_name in os.listdir(img_dir):
             img_path = os.path.join(img_dir, img_name)
             x = jt.random([10, 3, 224, 224])
             sta = time.time()
             ret = model(x)
             time_spend = time.time() - sta
-            print("Once detect cost time:", time_spend)
+            detected_num += 1
+            print("\rDetect process:", detected_num, "/", total_num, "cost time:", time_spend, "    ", end="")
             time_list.append(time_spend)
             #ret.save(os.path.join('result', img_name))
+    print()
 
     avg_time = 0
     skip_num = 5

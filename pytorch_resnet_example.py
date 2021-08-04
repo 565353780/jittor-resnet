@@ -253,9 +253,12 @@ if __name__ == "__main__":
     model.to(device)
     model.eval()
 
+    run_episode = 10
     time_list = []
+    detected_num = 0
+    total_num = run_episode * len(img_list)
     print("Start detect process...")
-    for i in range(10):
+    for i in range(run_episode):
         for img_name in img_list:
             img = Image.open('./sample_images/' + img_name)
             img_t = preprocess(img)
@@ -263,8 +266,10 @@ if __name__ == "__main__":
             start = time.time()
             batch_out = model(batch_t)
             time_spend = time.time() - start
-            print("Once detect cost time:", time_spend)
+            detected_num += 1
+            print("\rDetect process:", detected_num, "/", total_num, "cost time:", time_spend, "    ", end="")
             time_list.append(time_spend)
+    print()
 
     avg_time = 0
     skip_num = 5
