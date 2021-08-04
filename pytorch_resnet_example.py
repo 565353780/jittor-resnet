@@ -240,14 +240,20 @@ def resnet152(pretrained=False, **kwargs):
     return model
 
 if __name__ == "__main__":
+    print("Start load images...")
     img_list = os.listdir("./sample_images")
+    print("Start find device...")
     device = torch.device('cuda')
+    print("device found :", device)
+    print("Start load model...")
     model = resnet50()
     state_dict = torch.load('resnet50.pth')
     model.load_state_dict(state_dict)
+    print("model loaded!")
     model.to(device)
     model.eval()
 
+    print("Start detect process...")
     for img_name in img_list:
         img = Image.open('./sample_images/' + img_name)
         img_t = preprocess(img)
