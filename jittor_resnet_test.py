@@ -47,3 +47,4 @@ if __name__ == '__main__':
         avg_time += time
     avg_time /= (len(time_list) - skip_num)
     print("average time spend = ", avg_time)
+

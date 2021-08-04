@@ -253,12 +253,27 @@ if __name__ == "__main__":
     model.to(device)
     model.eval()
 
+    time_list = []
     print("Start detect process...")
-    for img_name in img_list:
-        img = Image.open('./sample_images/' + img_name)
-        img_t = preprocess(img)
-        batch_t = torch.unsqueeze(img_t, 0).to(device)
-        start = time.time()
-        batch_out = model(batch_t)
-        print("OK, spend time : ", time.time() - start)
+    for i in range(10):
+        for img_name in img_list:
+            img = Image.open('./sample_images/' + img_name)
+            img_t = preprocess(img)
+            batch_t = torch.unsqueeze(img_t, 0).to(device)
+            start = time.time()
+            batch_out = model(batch_t)
+            time_spend = time.time() - start
+            print("Once detect cost time:", time_spend)
+            time_list.append(time_spend)
+
+    avg_time = 0
+    skip_num = 5
+    skip_index = -1
+    for time in time_list:
+        skip_index += 1
+        if skip_index < skip_num:
+            continue
+        avg_time += time
+    avg_time /= (len(time_list) - skip_num)
+    print("average time spend = ", avg_time)
 
