@@ -9,49 +9,172 @@ import os
 from jittor.models import Resnet50, Resnet18
 jt.flags.use_cuda = 1
 
-# Load model checkpoint
-experiment_id = "pretrain_model" # set your experiment id
-model_path = os.path.join('tensorboard', experiment_id, 'model_best.pkl')
-model_path = ('resnet50.pth')
-#  params = pickle.load(open(model_path, "rb"))
-model = Resnet50(pretrained=True)
-#  model.load_parameters(params)
-model.eval()
-print(f'[*] Load model {model_path} success')
+class ResNetDetector:
+    def __init__(self):
+        self.valid_net_depth = [18, 50]
+        self.net_depth = None
+        self.model = None
+        self.model_ready = False
+        self.time_start = None
+        self.total_time_sum = 0
+        self.detected_num = 0
+
+    def reset(self):
+        self.valid_net_depth = [18, 50]
+        self.net_depth = None
+        self.model = None
+        self.model_ready = False
+        self.time_start = None
+        self.total_time_sum = 0
+        self.detected_num = 0
+
+    def resetTimer(self):
+        self.time_start = None
+        self.total_time_sum = 0
+        self.detected_num = 0
+
+    def startTimer(self):
+        self.time_start = time.time()
+
+    def endTimer(self, save_time=True):
+        time_end = time.time()
+
+        if not save_time:
+            return
+
+        if self.time_start is None:
+            print("startTimer must run first!")
+            return
+
+        if time_end > self.time_start:
+            self.total_time_sum += time_end - self.time_start
+            self.detected_num += 1
+        else:
+            print("Time end must > time start!")
+
+    def getAverageTime(self):
+        if self.detected_num == 0:
+            return -1
+
+        return 1.0 * self.total_time_sum / self.detected_num
+
+    def loadModel(self, net_depth, model_path=None):
+        self.net_depth = net_depth
+        self.model_ready = False
+
+        if self.net_depth not in self.valid_net_depth:
+            print("Invalid net_depth!")
+            return
+
+        need_pretrained_param = model_path is None
+
+        if self.net_depth == 18:
+            self.model = Resnet18(pretrained=need_pretrained_param)
+        elif self.net_depth == 50:
+            self.model = Resnet50(pretrained=need_pretrained_param)
+
+        if model_path is not None:
+            if not os.path.exists(model_path):
+                print("Model not exists!")
+                return
+
+            params = pickle.load(open(model_path, "rb"))
+            self.model.load_parameters(params)
+
+        self.model.eval()
+        if model_path is None:
+            print("Load model pretrained Resnet" + str(self.net_depth) + " success")
+        else:
+            print("Load model " + model_path + " success")
+        self.model_ready = True
+        return
+
+    def detect(self, image):
+        output = self.model(image)
+        return output
+
+    def test(self, image_folder_path, run_episode=10, timer_skip_num=5):
+        if not self.model_ready:
+            print("Model not ready yet, Please loadModel or check your model path first!")
+            return
+
+        if run_episode == 0:
+            print("No detect run with run_episode=0!")
+            return
+
+        image_file_name_list = os.listdir(image_folder_path)
+
+        if run_episode < 0:
+            self.resetTimer()
+            timer_skipped_num = 0
+
+            while True:
+                for image_file_name in image_file_name_list:
+                    #  image_file_path = os.path.join(image_folder_path, image_file_name)
+                    image = jt.random([10, 3, 224, 224])
+
+                    self.startTimer()
+
+                    output = self.detect(image)
+
+                    if timer_skipped_num < timer_skip_num:
+                        self.endTimer(False)
+                        timer_skipped_num += 1
+                    else:
+                        self.endTimer()
+
+                    print("\rNet: ResNet" + str(self.net_depth) +
+                          "\tDetected: " + str(self.detected_num) +
+                          "\tAvgTime: " + str(self.getAverageTime()) +
+                          "    ", end="")
+
+                    #output.save(os.path.join('result', img_name))
+            print()
+
+            return
+
+        self.resetTimer()
+        total_num = run_episode * len(image_file_name_list)
+        timer_skipped_num = 0
+
+        for i in range(run_episode):
+            for image_file_name in image_file_name_list:
+                #  image_file_path = os.path.join(image_folder_path, image_file_name)
+                image = jt.random([10, 3, 224, 224])
+
+                self.startTimer()
+
+                output = self.detect(image)
+
+                if timer_skipped_num < timer_skip_num:
+                    self.endTimer(False)
+                    timer_skipped_num += 1
+                else:
+                    self.endTimer()
+
+                print("\rNet: ResNet" + str(self.net_depth) +
+                      "\tDetected: " + str(self.detected_num) + "/" + str(total_num) +
+                      "\t\tAvgTime: " + str(self.getAverageTime()) +
+                      "    ", end="")
+
+                #output.save(os.path.join('result', img_name))
+        print()
+
 
 if __name__ == '__main__':
-    img_dir = 'sample_images'
     try:
         os.makedirs('result/')
     except:
         print('Destination dir exists')
         pass
 
-    run_episode = 10
-    time_list = []
-    detected_num = 0
-    total_num = run_episode * len(os.listdir(img_dir))
-    for i in range(run_episode):
-        for img_name in os.listdir(img_dir):
-            img_path = os.path.join(img_dir, img_name)
-            x = jt.random([10, 3, 224, 224])
-            sta = time.time()
-            ret = model(x)
-            time_spend = time.time() - sta
-            detected_num += 1
-            print("\rDetect process:", detected_num, "/", total_num, "    ", end="")
-            time_list.append(time_spend)
-            #ret.save(os.path.join('result', img_name))
-    print()
+    detector_list = []
 
-    avg_time = 0
-    skip_num = 5
-    skip_index = -1
-    for time in time_list:
-        skip_index += 1
-        if skip_index < skip_num:
-            continue
-        avg_time += time
-    avg_time /= (len(time_list) - skip_num)
-    print("average time spend = ", avg_time)
+    for i in range(10):
+        detector_list.append(ResNetDetector())
+        detector_list[i].loadModel(50)
+
+    for j in range(10):
+        for i in range(len(detector_list)):
+            detector_list[i].test('sample_images', 100)
 
