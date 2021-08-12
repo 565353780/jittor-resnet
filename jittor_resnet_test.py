@@ -159,7 +159,7 @@ class ResNetDetector:
                     self.endTimer()
 
                 print("\rNet: ResNet" + str(self.net_depth) +
-                      "\tDetected: " + str(self.detected_num) + "/" + str(total_num) +
+                      "\tDetected: " + str(self.detected_num) + "/" + str(total_num - timer_skip_num) +
                       "\t\tAvgTime: " + str(self.getAverageTime()) +
                       "\tAvgFPS: " + str(self.getAverageFPS()) +
                       "    ", end="")
