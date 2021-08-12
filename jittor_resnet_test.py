@@ -57,6 +57,12 @@ class ResNetDetector:
 
         return 1.0 * self.total_time_sum / self.detected_num
 
+    def getAverageFPS(self):
+        if self.detected_num == 0:
+            return -1
+
+        return int(1.0 * self.detected_num / self.total_time_sum)
+
     def loadModel(self, net_depth, model_path=None):
         self.reset()
         self.net_depth = net_depth
@@ -125,6 +131,7 @@ class ResNetDetector:
                     print("\rNet: ResNet" + str(self.net_depth) +
                           "\tDetected: " + str(self.detected_num) +
                           "\tAvgTime: " + str(self.getAverageTime()) +
+                          "\tAvgFPS: " + str(self.getAverageFPS()) +
                           "    ", end="")
 
                     #result.save(os.path.join('result', img_name))
@@ -154,6 +161,7 @@ class ResNetDetector:
                 print("\rNet: ResNet" + str(self.net_depth) +
                       "\tDetected: " + str(self.detected_num) + "/" + str(total_num) +
                       "\t\tAvgTime: " + str(self.getAverageTime()) +
+                      "\tAvgFPS: " + str(self.getAverageFPS()) +
                       "    ", end="")
 
                 #result.save(os.path.join('result', img_name))
