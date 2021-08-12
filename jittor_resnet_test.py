@@ -20,7 +20,6 @@ class ResNetDetector:
         self.detected_num = 0
 
     def reset(self):
-        self.valid_net_depth = [18, 50]
         self.net_depth = None
         self.model = None
         self.model_ready = False
@@ -59,8 +58,8 @@ class ResNetDetector:
         return 1.0 * self.total_time_sum / self.detected_num
 
     def loadModel(self, net_depth, model_path=None):
+        self.reset()
         self.net_depth = net_depth
-        self.model_ready = False
 
         if self.net_depth not in self.valid_net_depth:
             print("Invalid net_depth!")
@@ -90,8 +89,8 @@ class ResNetDetector:
         return
 
     def detect(self, image):
-        output = self.model(image)
-        return output
+        result = self.model(image)
+        return result
 
     def test(self, image_folder_path, run_episode=10, timer_skip_num=5):
         if not self.model_ready:
@@ -115,7 +114,7 @@ class ResNetDetector:
 
                     self.startTimer()
 
-                    output = self.detect(image)
+                    result = self.detect(image)
 
                     if timer_skipped_num < timer_skip_num:
                         self.endTimer(False)
@@ -128,7 +127,7 @@ class ResNetDetector:
                           "\tAvgTime: " + str(self.getAverageTime()) +
                           "    ", end="")
 
-                    #output.save(os.path.join('result', img_name))
+                    #result.save(os.path.join('result', img_name))
             print()
 
             return
@@ -144,7 +143,7 @@ class ResNetDetector:
 
                 self.startTimer()
 
-                output = self.detect(image)
+                result = self.detect(image)
 
                 if timer_skipped_num < timer_skip_num:
                     self.endTimer(False)
@@ -157,7 +156,7 @@ class ResNetDetector:
                       "\t\tAvgTime: " + str(self.getAverageTime()) +
                       "    ", end="")
 
-                #output.save(os.path.join('result', img_name))
+                #result.save(os.path.join('result', img_name))
         print()
 
 
