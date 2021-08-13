@@ -12,12 +12,7 @@ jt.flags.use_cuda = 1
 class ResNetDetector:
     def __init__(self):
         self.valid_net_depth = [18, 50]
-        self.net_depth = None
-        self.model = None
-        self.model_ready = False
-        self.time_start = None
-        self.total_time_sum = 0
-        self.detected_num = 0
+        self.reset()
 
     def reset(self):
         self.net_depth = None
